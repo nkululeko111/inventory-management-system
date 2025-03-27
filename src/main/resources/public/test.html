@@ -1,0 +1,546 @@
+// Global variables
+// Global variables
+let currentEditProductId = null;
+let currentEditSupplierId = null;
+const API_BASE_URL = 'http://localhost:4567/api';
+
+document.addEventListener('DOMContentLoaded', function() {
+// Initialize dashboard metrics
+fetchDashboardMetrics();
+
+// Load initial data
+fetchProducts();
+fetchSales();
+fetchSuppliers();  // Add this line
+loadSupplierDropdown();  // Add this line
+
+// Setup event listeners
+setupEventListeners();
+
+// Initialize alerts container
+const alertsContainer = document.createElement('div');
+alertsContainer.id = 'alertsContainer';
+alertsContainer.className = 'position-fixed top-0 end-0 p-3';
+alertsContainer.style.zIndex = '11';
+document.body.appendChild(alertsContainer);
+});
+
+function setupEventListeners() {
+// Save product button (for both add and update)
+document.getElementById('saveProductBtn').addEventListener('click', handleProductSave);
+
+// Add supplier save button listener
+document.getElementById('saveSupplierBtn').addEventListener('click', handleSupplierSave);
+
+// Modal close reset
+const productModal = document.getElementById('addProductModal');
+if (productModal) {
+productModal.addEventListener('hidden.bs.modal', resetProductForm);
+}
+
+// Add supplier modal close reset
+const supplierModal = document.getElementById('addSupplierModal');
+if (supplierModal) {
+supplierModal.addEventListener('hidden.bs.modal', resetSupplierForm);
+}
+}
+// Fetch all suppliers
+function fetchSuppliers() {
+fetch(`${API_BASE_URL}/suppliers`)
+.then(response => {
+if (!response.ok) throw new Error('Network response was not ok');
+return response.json();
+})
+.then(suppliers => {
+const tableBody = document.getElementById('suppliersTableBody');
+tableBody.innerHTML = '';
+
+suppliers.forEach(supplier => {
+const row = document.createElement('tr');
+// In fetchProducts() function, update the row.innerHTML to include supplier:
+// Fix the row template in fetchSuppliers()
+row.innerHTML = `
+<td>${supplier.id}</td>
+<td>${supplier.name}</td>
+<td>${supplier.contactPerson || 'N/A'}</td>
+<td>${supplier.email || 'N/A'}</td>
+<td>${supplier.phone || 'N/A'}</td>
+<td>
+  <button class="btn btn-sm btn-warning me-2" onclick="prepareEditSupplier(${supplier.id})">
+    <i class="fas fa-edit"></i> Edit
+  </button>
+  <button class="btn btn-sm btn-danger" onclick="confirmDeleteSupplier(${supplier.id})">
+    <i class="fas fa-trash"></i> Delete
+  </button>
+</td>
+
+// Fetch dashboard metrics
+function fetchDashboardMetrics() {
+fetch(`${API_BASE_URL}/products`)
+.then(response => {
+if (!response.ok) throw new Error('Network response was not ok');
+return response.json();
+})
+.then(products => {
+// Update total products count
+document.getElementById('totalProducts').textContent = products.length;
+
+// Calculate and update total stock (stock_quantity)
+const totalStock = products.reduce((sum, product) => sum + (product.stockQuantity || 0), 0);
+document.getElementById('totalStock').textContent = totalStock;
+
+// Calculate and update low stock items (stock_quantity < 5)
+const lowStockItems = products.filter(p => (p.stockQuantity || 0) < 5).length;
+document.getElementById('lowStock').textContent = lowStockItems;
+})
+.catch(error => {
+console.error('Error fetching dashboard metrics:', error);
+showAlert('danger', 'Failed to load dashboard data');
+});
+}
+
+// Fetch all products
+function fetchProducts() {
+fetch(`${API_BASE_URL}/products`)
+.then(response => {
+if (!response.ok) throw new Error('Network response was not ok');
+return response.json();
+})
+.then(products => {
+const tableBody = document.getElementById('productsTableBody');
+tableBody.innerHTML = '';
+
+products.forEach(product => {
+const row = document.createElement('tr');
+row.innerHTML = `
+<td>${product.id}</td>
+<td>${product.name}</td>
+<td>$${product.price.toFixed(2)}</td>
+<td>${product.stockQuantity}</td>
+<td>${product.supplierName || 'No supplier'}</td>
+<td>
+  <button class="btn btn-sm btn-warning me-2" onclick="prepareEditProduct(${product.id})">
+    <i class="fas fa-edit"></i> Edit
+  </button>
+  <button class="btn btn-sm btn-danger" onclick="confirmDeleteProduct(${product.id})">
+    <i class="fas fa-trash"></i> Delete
+  </button>
+</td>
+`;
+tableBody.appendChild(row);
+});
+})
+.catch(error => {
+console.error('Error fetching products:', error);
+showAlert('danger', 'Failed to load products');
+});
+}
+function fetchSales() {
+fetch(`${API_BASE_URL}/sales`)
+.then(response => {
+if (!response.ok) throw new Error('Network response was not ok');
+return response.json();
+})
+.then(sales => {
+const tableBody = document.getElementById('salesTableBody');
+tableBody.innerHTML = '';
+
+sales.forEach(sale => {
+const row = document.createElement('tr');
+row.innerHTML = `
+<td>${sale.id}</td>
+<td>${sale.productName || `Product ID: ${sale.productId}`}</td>
+<td>${sale.quantitySold}</td>
+<td>${new Date(sale.saleDate).toLocaleString()}</td>
+`;
+tableBody.appendChild(row);
+});
+})
+.catch(error => {
+console.error('Error fetching sales:', error);
+showAlert('danger', 'Failed to load sales data: ' + error.message);
+});
+}
+
+// Add new product
+function addProduct(productData) {
+fetch(`${API_BASE_URL}/products`, {
+method: 'POST',
+headers: {
+'Content-Type': 'application/json'
+},
+body: JSON.stringify(productData)
+})
+.then(response => {
+if (!response.ok) throw new Error('Failed to add product');
+return response.json();
+})
+.then(() => {
+$('#addProductModal').modal('hide');
+showAlert('success', 'Product added successfully');
+fetchProducts();
+fetchDashboardMetrics();
+})
+.catch(error => {
+console.error('Error adding product:', error);
+showAlert('danger', 'Failed to add product');
+});
+}
+
+// Prepare product for editing
+function prepareEditProduct(productId) {
+fetch(`${API_BASE_URL}/products/${productId}`)
+.then(response => {
+if (!response.ok) throw new Error('Network response was not ok');
+return response.json();
+})
+.then(product => {
+currentEditProductId = product.id;
+document.getElementById('productName').value = product.name;
+document.getElementById('productPrice').value = product.price;
+document.getElementById('productQuantity').value = product.stockQuantity;
+
+// Update modal title and button
+document.getElementById('addProductModalLabel').textContent = 'Edit Product';
+document.getElementById('saveProductBtn').textContent = 'Update Product';
+
+$('#addProductModal').modal('show');
+})
+.catch(error => {
+console.error('Error fetching product:', error);
+showAlert('danger', 'Failed to load product details');
+});
+}
+
+// Update existing product
+function updateProduct(productId, productData) {
+fetch(`${API_BASE_URL}/products/${productId}`, {
+method: 'PUT',
+headers: {
+'Content-Type': 'application/json'
+},
+body: JSON.stringify(productData)
+})
+.then(response => {
+if (!response.ok) throw new Error('Failed to update product');
+return response.json();
+})
+.then(() => {
+$('#addProductModal').modal('hide');
+showAlert('success', 'Product updated successfully');
+fetchProducts();
+fetchDashboardMetrics();
+})
+.catch(error => {
+console.error('Error updating product:', error);
+showAlert('danger', 'Failed to update product');
+});
+}
+
+// Confirm and delete product
+function confirmDeleteProduct(productId) {
+if (confirm('Are you sure you want to delete this product? This action cannot be undone.')) {
+deleteProduct(productId);
+}
+}
+
+// Delete product
+function deleteProduct(productId) {
+fetch(`${API_BASE_URL}/products/${productId}`, {
+method: 'DELETE'
+})
+.then(response => {
+if (!response.ok) throw new Error('Failed to delete product');
+showAlert('success', 'Product deleted successfully');
+fetchProducts();
+fetchDashboardMetrics();
+})
+.catch(error => {
+console.error('Error deleting product:', error);
+showAlert('danger', 'Failed to delete product');
+});
+}
+
+// Reset product form
+function resetProductForm() {
+document.getElementById('addProductForm').reset();
+document.getElementById('addProductModalLabel').textContent = 'Add New Product';
+document.getElementById('saveProductBtn').textContent = 'Save Product';
+currentEditProductId = null;
+}
+
+// Show alert message
+function showAlert(type, message) {
+const alertDiv = document.createElement('div');
+alertDiv.className = `alert alert-${type} alert-dismissible fade show`;
+alertDiv.role = 'alert';
+alertDiv.innerHTML = `
+${message}
+<button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+`;
+
+const alertsContainer = document.getElementById('alertsContainer');
+alertsContainer.appendChild(alertDiv);
+
+// Auto-dismiss after 5 seconds
+setTimeout(() => {
+alertDiv.remove();
+}, 5000);
+}
+
+// Stock adjustment functions
+function adjustStock(productId, delta) {
+fetch(`${API_BASE_URL}/products/${productId}/stock/adjust`, {
+method: 'POST',
+headers: {
+'Content-Type': 'application/json'
+},
+body: JSON.stringify({ delta: delta })
+})
+.then(response => {
+if (!response.ok) throw new Error('Failed to adjust stock');
+showAlert('success', 'Stock adjusted successfully');
+fetchProducts();
+fetchDashboardMetrics();
+})
+.catch(error => {
+console.error('Error adjusting stock:', error);
+showAlert('danger', 'Failed to adjust stock');
+});
+}<!DOCTYPE html>
+<html lang="en">
+<head>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" />
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Inventory Dashboard</title>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<div class="container-fluid">
+  <div class="row">
+    <!-- Sidebar -->
+    <nav id="sidebar" class="col-md-3 col-lg-2 d-md-block bg-dark sidebar">
+      <div class="position-sticky pt-3">
+        <h4 class="text-white px-3">Inventory System</h4>
+        <ul class="nav flex-column">
+          <li class="nav-item">
+            <a class="nav-link active" href="#dashboard" data-bs-toggle="tab">
+              <i class="fas fa-tachometer-alt me-2"></i>Dashboard
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="#products" data-bs-toggle="tab">
+              <i class="fas fa-boxes me-2"></i>Products
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="#sales" data-bs-toggle="tab">
+              <i class="fas fa-shopping-cart me-2"></i>Sales
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="#suppliers" data-bs-toggle="tab">
+              <i class="fas fa-truck me-2"></i>Suppliers
+            </a>
+          </li>
+        </ul>
+      </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
+      <div class="tab-content">
+        <!-- Dashboard Tab -->
+        <div class="tab-pane fade show active" id="dashboard">
+          <h2 class="mt-4">Dashboard Overview</h2>
+          <div class="row mt-4">
+            <div class="col-md-4">
+              <div class="card text-white bg-primary mb-3">
+                <div class="card-body">
+                  <h5 class="card-title">Total Products</h5>
+                  <h2 class="card-text" id="totalProducts">0</h2>
+                </div>
+              </div>
+            </div>
+            <div class="col-md-4">
+              <div class="card text-white bg-success mb-3">
+                <div class="card-body">
+                  <h5 class="card-title">In Stock</h5>
+                  <h2 class="card-text" id="totalStock">0</h2>
+                </div>
+              </div>
+            </div>
+            <div class="col-md-4">
+              <div class="card text-white bg-warning mb-3">
+                <div class="card-body">
+                  <h5 class="card-title">Low Stock</h5>
+                  <h2 class="card-text" id="lowStock">0</h2>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Products Tab -->
+        <div class="tab-pane fade" id="products">
+          <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+            <h2>Product Management</h2>
+            <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addProductModal">
+              <i class="fas fa-plus me-2"></i>Add Product
+            </button>
+          </div>
+          <div class="table-responsive">
+            <table class="table table-striped table-hover">
+              <thead>
+              <tr>
+                <th>ID</th>
+                <th>Name</th>
+                <th>Price</th>
+                <th>Stock</th>
+                <th>Supplier</th>
+                <th>Actions</th>
+              </tr>
+              </thead>
+              <tbody id="productsTableBody">
+              <!-- Products will be loaded here -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Sales Tab -->
+        <div class="tab-pane fade" id="sales">
+          <h2 class="mt-4">Sales Records</h2>
+          <div class="table-responsive">
+            <table class="table table-striped table-hover">
+              <thead>
+              <tr>
+                <th>ID</th>
+                <th>Product</th>
+                <th>Quantity</th>
+                <th>Date</th>
+              </tr>
+              </thead>
+              <tbody id="salesTableBody">
+              <!-- Sales will be loaded here -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Suppliers Tab -->
+        <div class="tab-pane fade" id="suppliers">
+          <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+            <h2>Supplier Management</h2>
+            <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addSupplierModal">
+              <i class="fas fa-plus me-2"></i>Add Supplier
+            </button>
+          </div>
+          <div class="table-responsive">
+            <table class="table table-striped table-hover">
+              <thead>
+              <tr>
+                <th>ID</th>
+                <th>Name</th>
+                <th>Contact Person</th>
+                <th>Email</th>
+                <th>Phone</th>
+                <th>Actions</th>
+              </tr>
+              </thead>
+              <tbody id="suppliersTableBody">
+              <!-- Suppliers will be loaded here -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+</div>
+
+<!-- Add Product Modal -->
+<div class="modal fade" id="addProductModal" tabindex="-1" aria-labelledby="addProductModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="addProductModalLabel">Add New Product</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <form id="addProductForm">
+          <div class="mb-3">
+            <label for="productName" class="form-label">Product Name</label>
+            <input type="text" class="form-control" id="productName" required>
+          </div>
+          <div class="mb-3">
+            <label for="productPrice" class="form-label">Price</label>
+            <input type="number" step="0.01" class="form-control" id="productPrice" required>
+          </div>
+          <div class="mb-3">
+            <label for="productQuantity" class="form-label">Initial Stock</label>
+            <input type="number" class="form-control" id="productQuantity" required>
+          </div>
+          <div class="mb-3">
+            <label for="productSupplier" class="form-label">Supplier</label>
+            <select class="form-select" id="productSupplier">
+              <option value="">Select Supplier</option>
+              <!-- Suppliers will be loaded here -->
+            </select>
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+        <button type="button" class="btn btn-primary" id="saveProductBtn">Save Product</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Add Supplier Modal -->
+<div class="modal fade" id="addSupplierModal" tabindex="-1" aria-labelledby="addSupplierModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="addSupplierModalLabel">Add New Supplier</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <form id="addSupplierForm">
+          <div class="mb-3">
+            <label for="supplierName" class="form-label">Supplier Name</label>
+            <input type="text" class="form-control" id="supplierName" required>
+          </div>
+          <div class="mb-3">
+            <label for="contactPerson" class="form-label">Contact Person</label>
+            <input type="text" class="form-control" id="contactPerson">
+          </div>
+          <div class="mb-3">
+            <label for="supplierEmail" class="form-label">Email</label>
+            <input type="email" class="form-control" id="supplierEmail">
+          </div>
+          <div class="mb-3">
+            <label for="supplierPhone" class="form-label">Phone</label>
+            <input type="tel" class="form-control" id="supplierPhone">
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+        <button type="button" class="btn btn-primary" id="saveSupplierBtn">Save Supplier</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Scripts -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
+<script src="app.js"></script>
+</body>
+</html> wait let send the sale class ...package org.inventorymanagementsystem;
+

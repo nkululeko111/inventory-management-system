@@ -1,0 +1,250 @@
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.sidebar {
+    position: fixed;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    z-index: 100;
+    padding: 48px 0 0;
+    box-shadow: inset -1px 0 0 rgba(0, 0, 0, .1);
+}
+
+.sidebar .nav-link {
+    color: rgba(255, 255, 255, 0.8);
+    padding: 0.75rem 1rem;
+    margin-bottom: 0.2rem;
+}
+
+.sidebar .nav-link:hover {
+    color: white;
+    background-color: rgba(255, 255, 255, 0.1);
+}
+
+.sidebar .nav-link.active {
+    color: white;
+    background-color: rgba(255, 255, 255, 0.2);
+}
+
+main {
+    padding-top: 1.5rem;
+}
+
+.card {
+    transition: transform 0.2s;
+}
+
+.card:hover {
+    transform: translateY(-5px);
+}
+
+.table-responsive {
+    max-height: 500px;
+    overflow-y: auto;
+}
+
+
+/* Add these styles to your existing CSS */
+
+/* Supplier specific styles */
+#suppliers .table-responsive {
+    max-height: 600px;
+}
+
+/* Modal form styles */
+.modal-content {
+    border-radius: 10px;
+}
+
+.modal-header {
+    background-color: #f8f9fa;
+    border-bottom: 1px solid #dee2e6;
+    border-top-left-radius: 10px;
+    border-top-right-radius: 10px;
+}
+
+.modal-footer {
+    border-top: 1px solid #dee2e6;
+}
+
+/* Table action buttons */
+.btn-action {
+    padding: 0.25rem 0.5rem;
+    font-size: 0.875rem;
+    margin-right: 0.25rem;
+}
+
+.btn-edit {
+    color: #fff;
+    background-color: #6c757d;
+    border-color: #6c757d;
+}
+
+.btn-delete {
+    color: #fff;
+    background-color: #dc3545;
+    border-color: #dc3545;
+}
+
+/* Responsive table adjustments */
+@media (max-width: 768px) {
+    .table-responsive {
+        font-size: 0.875rem;
+    }
+
+    .sidebar {
+        width: 100%;
+        height: auto;
+        position: relative;
+    }
+
+    main {
+        padding-top: 1rem;
+    }
+}
+
+/* Sales Tab Specific Styles */
+#sales .table-responsive {
+    max-height: 600px;
+}
+
+/* Record Sale Modal Styles */
+#recordSaleModal .modal-body {
+    padding: 1.5rem;
+}
+
+#recordSaleModal .form-control:read-only {
+    background-color: #f8f9fa;
+    cursor: not-allowed;
+}
+
+#saleTotalPrice {
+    font-size: 1.25rem;
+    color: #28a745;
+}
+
+#productStockHelp {
+    display: block;
+    margin-top: 0.25rem;
+    font-size: 0.875rem;
+}
+
+/* Sales Report Modal Styles */
+#salesReportModal .modal-body {
+    padding: 1.5rem;
+}
+
+#salesReportModal .card-header {
+    padding: 0.75rem 1.25rem;
+}
+
+#salesReportModal .report-results {
+    display: none;
+    margin-top: 1.5rem;
+}
+
+#salesReportModal .h4 {
+    font-weight: 600;
+}
+
+#salesReportModal .table {
+    margin-bottom: 0;
+}
+
+/* Dashboard Sales Card */
+#todaysSales {
+    font-weight: 600;
+}
+
+/* Sales Table Styles */
+#salesTableBody tr:hover {
+    background-color: rgba(0, 123, 255, 0.05);
+}
+
+#salesTableBody td:nth-child(4),
+#salesTableBody td:nth-child(5) {
+    font-family: 'Courier New', Courier, monospace;
+    text-align: right;
+}
+
+#salesTableBody td:nth-child(5) {
+    color: #28a745;
+    font-weight: 500;
+}
+
+/* Action Buttons */
+.btn-sale {
+    padding: 0.25rem 0.5rem;
+    font-size: 0.875rem;
+}
+
+.btn-record {
+    background-color: #28a745;
+    border-color: #28a745;
+}
+
+.btn-record:hover {
+    background-color: #218838;
+    border-color: #1e7e34;
+}
+
+.btn-report {
+    background-color: #17a2b8;
+    border-color: #17a2b8;
+}
+
+.btn-report:hover {
+    background-color: #138496;
+    border-color: #117a8b;
+}
+
+/* Responsive Adjustments */
+@media (max-width: 768px) {
+    #salesTableBody td:nth-child(4),
+    #salesTableBody td:nth-child(5) {
+        font-size: 0.8rem;
+    }
+
+    #sales .d-flex {
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+
+    #sales .btn {
+        width: 100%;
+    }
+
+    #recordSaleModal .modal-dialog,
+    #salesReportModal .modal-dialog {
+        margin: 0.5rem auto;
+    }
+}
+
+/* Animation for new sales */
+@keyframes highlightSale {
+    from { background-color: rgba(40, 167, 69, 0.3); }
+    to { background-color: transparent; }
+}
+
+.new-sale {
+    animation: highlightSale 2s ease-out;
+}
+
+/* Price formatting */
+.price {
+    font-family: 'Courier New', Courier, monospace;
+    font-weight: 600;
+}
+
+.price-positive {
+    color: #28a745;
+}
+
+/* Date formatting */
+.sale-date {
+    white-space: nowrap;
+    font-size: 0.875rem;
+    color: #6c757d;
+}

@@ -1,49 +1,41 @@
-Inventory Management System
 
-Overview
+# Inventory Management System
 
-This Inventory Management System is a simple Java-based application designed for small retail businesses. It allows users to manage product stock levels, record sales transactions, and receive notifications when stock is low. The system uses a MySQL database for data storage and retrieval.
+![Java](https://img.shields.io/badge/Java-17%2B-blue)
+![MySQL](https://img.shields.io/badge/MySQL-8.0%2B-orange)
+![License](https://img.shields.io/badge/License-MIT-green)
 
-Features
+A Java-based inventory management solution for small retail businesses with MySQL backend.
 
-Add Products: Register new products with a name, price, and stock quantity.
+## Features
 
-Update Stock: Modify stock levels for existing products.
+- **Product Management**
+  - Add new products with name, price, and stock quantity
+  - Update existing product information
+  - View complete product catalog
 
-View Stock: Display all products with their current stock levels.
+- **Inventory Control**
+  - Adjust stock levels manually
+  - Automatic stock deduction on sales
+  - Low stock threshold alerts
 
-Record Sales: Log sales transactions and update inventory accordingly.
+- **Sales Tracking**
+  - Record sales transactions
+  - Maintain sales history
+  - Link sales to inventory items
 
-Low Stock Alerts: Notify users when stock falls below a predefined threshold.
+## Technology Stack
 
-Technologies Used
+- **Core**: Java 17 (Object-Oriented Programming)
+- **Database**: MySQL 8.0
+- **Connectivity**: JDBC API
+- **CLI Interface**: Java Scanner
 
-Java (Object-Oriented Programming)
+## Database Schema
 
-MySQL (Relational Database Management System)
-
-JDBC (Database Connectivity)
-
-Scanner (Java.util) (For user input handling)
-
-Prerequisites
-
-Before running the project, ensure you have the following installed:
-
-Java Development Kit (JDK) 11 or later
-
-MySQL Server
-
-MySQL Connector/J (JDBC driver)
-
-Database Setup
-
-Create a new MySQL database:
-
+```sql
 CREATE DATABASE inventory;
 USE inventory;
-
-Create the required tables:
 
 CREATE TABLE products (
     id INT PRIMARY KEY AUTO_INCREMENT,
@@ -59,45 +51,84 @@ CREATE TABLE sales (
     sale_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (product_id) REFERENCES products(id)
 );
+```
 
-How to Run the Project
+## Installation
 
-Clone the repository or download the source code.
+### Prerequisites
+- JDK 17+
+- MySQL Server 8.0+
+- MySQL Connector/J
 
-Open the project in your preferred Java IDE (e.g., IntelliJ, Eclipse, or VS Code).
+### Setup
+1. Clone the repository:
+   ```bash
+   git clone https://github.com/nkululeko111/inventory-management-system.git
+   ```
 
-Configure the database connection in DatabaseConnection class:
+2. Import the project into your IDE (IntelliJ/Eclipse)
 
-private static final String DB_URL = "jdbc:mysql://localhost:3306/inventory";
-private static final String USER = "root";
-private static final String PASS = "yourpassword";
+3. Configure database connection in `DatabaseConnection.java`:
+   ```java
+   private static final String DB_URL = "jdbc:mysql://localhost:3306/inventory";
+   private static final String USER = "your_username";
+   private static final String PASS = "your_password";
+   ```
 
-Compile and run the InventoryManagementSystem.java file.
+4. Execute the SQL schema to create database tables
 
-Use the command-line interface to interact with the system.
+## Usage
 
-Usage Guide
+Run the application from `InventoryManagementSystem.java` and use the console menu:
 
-Adding a Product: Enter the product name, price, and initial stock quantity.
+```
+Inventory Management System
+1. Add Product
+2. Update Stock
+3. View Stock
+4. Record Sale
+5. Exit
+```
 
-Updating Stock: Provide the product ID and new stock quantity.
+## API Documentation (Optional)
 
-Viewing Stock: Displays all products with stock levels.
+For REST API usage, see the [API Documentation](API_DOCS.md).
 
-Recording a Sale: Enter the product ID and quantity sold.
+## Roadmap
 
-Future Enhancements
+- [ ] Graphical User Interface (GUI)
+- [ ] User authentication system
+- [ ] Advanced reporting module
+- [ ] Email/SMS stock alerts
+- [ ] Barcode scanning integration
 
-Implement a graphical user interface (GUI).
+## Contributing
 
-Add user authentication and role management.
+1. Fork the repository
+2. Create your feature branch (`git checkout -b feature/your-feature`)
+3. Commit your changes (`git commit -m 'Add some feature'`)
+4. Push to the branch (`git push origin feature/your-feature`)
+5. Open a Pull Request
 
-Generate detailed sales reports.
+## License
 
-Integrate email notifications for restocking alerts.
+Distributed under the MIT License. See `LICENSE` for more information.
 
-License
+## Contact
 
-This project is open-source and free to use under the MIT License.
+Project Maintainer: [nkululeko]
+Project Link: https://github.com/nkululeko111/inventory-management-system
+```
 
+This README includes:
 
+1. **Badges** for quick visual identification of technologies
+2. **Clear feature breakdown**
+3. **Complete database schema** with proper formatting
+4. **Step-by-step installation** instructions
+5. **Usage example** showing the console interface
+6. **API documentation** link (optional)
+7. **Development roadmap** with checkboxes
+8. **Contribution guidelines**
+9. **License information**
+10. **Contact details**

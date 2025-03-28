@@ -43,6 +43,7 @@ function setupEventListeners() {
     document.getElementById('confirmSaleBtn').addEventListener('click', recordSale);
     document.getElementById('saleProduct').addEventListener('change', updateSalePrice);
     document.getElementById('saleQuantity').addEventListener('input', updateSaleTotal);
+
 }
 
 // ==================== PRODUCT FUNCTIONS ====================
@@ -156,7 +157,9 @@ function addProduct(productData) {
         document.getElementById('addProductModal').querySelector('.btn-close').click();
         fetchProducts();
         fetchDashboardMetrics();
-        loadProductsForSale(); // Refresh products dropdown for sales
+        loadProductsForSale();
+         fetchSuppliers();
+
     })
     .catch(error => {
         console.error('Error adding product:', error);
@@ -204,7 +207,7 @@ function deleteProduct(productId) {
         showAlert('success', 'Product deleted successfully');
         fetchProducts();
         fetchDashboardMetrics();
-        loadProductsForSale(); // Refresh products dropdown for sales
+        loadProductsForSale();
     })
     .catch(error => {
         console.error('Error deleting product:', error);
@@ -493,46 +496,98 @@ function updateSaleTotal() {
     const total = (quantity * price).toFixed(2);
     document.getElementById('saleTotalPrice').textContent = `$${total}`;
 }
-
 function recordSale() {
-    const productId = parseInt(document.getElementById('saleProduct').value);
-    const quantity = parseInt(document.getElementById('saleQuantity').value);
-    const price = parseFloat(document.getElementById('salePrice').value);
+    const productSelect = document.getElementById('saleProduct');
+    const quantityInput = document.getElementById('saleQuantity');
+    const priceInput = document.getElementById('salePrice');
 
-    if (!productId || isNaN(quantity) || quantity <= 0) {
-        showAlert('warning', 'Please select a product and enter valid quantity');
+    // Validate inputs exist
+    if (!productSelect || !quantityInput || !priceInput) {
+        showAlert('danger', 'Form elements not found');
+        return;
+    }
+
+    // Get selected product details
+    const selectedOption = productSelect.options[productSelect.selectedIndex];
+    if (!selectedOption || !selectedOption.value) {
+        showAlert('warning', 'Please select a product');
+        return;
+    }
+
+    const availableStock = parseInt(selectedOption.dataset.stock) || 0;
+    const quantity = parseInt(quantityInput.value);
+    const price = parseFloat(priceInput.value);
+
+    // Validate quantity
+    if (isNaN(quantity) || quantity <= 0) {
+        showAlert('warning', 'Please enter valid quantity (minimum 1)');
+        return;
+    }
+
+    // Validate stock
+    if (quantity > availableStock) {
+        showAlert('warning', `Only ${availableStock} units available`);
+        return;
+    }
+
+    // Validate price
+    if (isNaN(price) || price <= 0) {
+        showAlert('warning', 'Please enter valid price');
         return;
     }
 
     const saleData = {
-        productId: productId,
+        productId: parseInt(productSelect.value),
         quantitySold: quantity,
         unitPrice: price
     };
 
+    // Show loading state
+    const confirmBtn = document.getElementById('confirmSaleBtn');
+    const originalBtnText = confirmBtn.innerHTML;
+    confirmBtn.disabled = true;
+    confirmBtn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Processing...';
+
     fetch(`${API_BASE_URL}/sales`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json'
+        },
         body: JSON.stringify(saleData)
     })
-    .then(response => {
-        if (!response.ok) throw new Error('Sale failed');
-        return response.json();
+    .then(async response => {
+        const data = await response.json();
+        if (!response.ok) {
+            throw new Error(data.message || 'Sale failed');
+        }
+        return data;
     })
     .then(data => {
         showAlert('success', 'Sale recorded successfully');
-        document.getElementById('recordSaleModal').querySelector('.btn-close').click();
+
+        // Close modal
+        const modal = bootstrap.Modal.getInstance(document.getElementById('recordSaleModal'));
+        if (modal) modal.hide();
+
+        // Refresh data
         fetchSales();
-        fetchProducts(); // Refresh stock levels
+        fetchProducts();
         fetchDashboardMetrics();
-        loadProductsForSale(); // Refresh dropdown
+        loadProductsForSale();
     })
     .catch(error => {
-        console.error('Error recording sale:', error);
+        console.error('Sale error:', error);
         showAlert('danger', error.message || 'Failed to record sale');
+    })
+    .finally(() => {
+        // Reset button state
+        if (confirmBtn) {
+            confirmBtn.disabled = false;
+            confirmBtn.innerHTML = originalBtnText;
+        }
     });
 }
-
 // ==================== DASHBOARD & UTILITY FUNCTIONS ====================
 function fetchDashboardMetrics() {
     fetch(`${API_BASE_URL}/products`)
@@ -571,8 +626,20 @@ function fetchDashboardMetrics() {
             console.error('Error fetching today\'s sales:', error);
         });
 }
-
 function showAlert(type, message) {
+    // Ensure the alerts container exists
+    let alertsContainer = document.getElementById('alertsContainer');
+
+    // If it doesn't exist, create it
+    if (!alertsContainer) {
+        alertsContainer = document.createElement('div');
+        alertsContainer.id = 'alertsContainer';
+        alertsContainer.className = 'position-fixed top-0 end-0 p-3';
+        alertsContainer.style.zIndex = '1100';
+        document.body.appendChild(alertsContainer);
+    }
+
+    // Create the alert element
     const alertDiv = document.createElement('div');
     alertDiv.className = `alert alert-${type} alert-dismissible fade show`;
     alertDiv.role = 'alert';
@@ -581,15 +648,17 @@ function showAlert(type, message) {
         <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
     `;
 
-    const alertsContainer = document.getElementById('alertsContainer');
+    // Add the alert to the container
     alertsContainer.appendChild(alertDiv);
 
     // Auto-dismiss after 5 seconds
     setTimeout(() => {
-        alertDiv.remove();
+        alertDiv.classList.remove('show');
+        alertDiv.addEventListener('transitionend', () => {
+            alertDiv.remove();
+        });
     }, 5000);
 }
-
 // Stock adjustment functions
 function adjustStock(productId, delta) {
     fetch(`${API_BASE_URL}/products/${productId}/stock/adjust`, {

@@ -24,7 +24,7 @@ public class InventoryManagementSystem {
         try {
             DatabaseConnection.startWebServer();
             try (Connection conn = DatabaseConnection.getConnection()) {
-
+                awaitInitialization();
             }
         } catch (SQLException e) {
             System.err.println("Database error: " + e.getMessage());

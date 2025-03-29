@@ -43,7 +43,6 @@ function setupEventListeners() {
     document.getElementById('confirmSaleBtn').addEventListener('click', recordSale);
     document.getElementById('saleProduct').addEventListener('change', updateSalePrice);
     document.getElementById('saleQuantity').addEventListener('input', updateSaleTotal);
-
 }
 
 // ==================== PRODUCT FUNCTIONS ====================
@@ -157,9 +156,7 @@ function addProduct(productData) {
         document.getElementById('addProductModal').querySelector('.btn-close').click();
         fetchProducts();
         fetchDashboardMetrics();
-        loadProductsForSale();
-         fetchSuppliers();
-
+        loadProductsForSale(); // Refresh products dropdown for sales
     })
     .catch(error => {
         console.error('Error adding product:', error);
@@ -207,7 +204,7 @@ function deleteProduct(productId) {
         showAlert('success', 'Product deleted successfully');
         fetchProducts();
         fetchDashboardMetrics();
-        loadProductsForSale();
+        loadProductsForSale(); // Refresh products dropdown for sales
     })
     .catch(error => {
         console.error('Error deleting product:', error);
@@ -476,118 +473,47 @@ function loadProductsForSale() {
         });
 }
 
-function updateSalePrice() {
-    const productSelect = document.getElementById('saleProduct');
-    const priceInput = document.getElementById('salePrice');
-    const selectedOption = productSelect.options[productSelect.selectedIndex];
+f
 
-    if (selectedOption && selectedOption.dataset.price) {
-        priceInput.value = selectedOption.dataset.price;
-        updateSaleTotal();
-    } else {
-        priceInput.value = '';
-        document.getElementById('saleTotalPrice').textContent = '$0.00';
-    }
-}
-
-function updateSaleTotal() {
-    const quantity = parseInt(document.getElementById('saleQuantity').value) || 0;
-    const price = parseFloat(document.getElementById('salePrice').value) || 0;
-    const total = (quantity * price).toFixed(2);
-    document.getElementById('saleTotalPrice').textContent = `$${total}`;
-}
 function recordSale() {
-    const productSelect = document.getElementById('saleProduct');
-    const quantityInput = document.getElementById('saleQuantity');
-    const priceInput = document.getElementById('salePrice');
+    const productId = parseInt(document.getElementById('saleProduct').value);
+    const quantity = parseInt(document.getElementById('saleQuantity').value);
+    const price = parseFloat(document.getElementById('salePrice').value);
 
-    // Validate inputs exist
-    if (!productSelect || !quantityInput || !priceInput) {
-        showAlert('danger', 'Form elements not found');
-        return;
-    }
-
-    // Get selected product details
-    const selectedOption = productSelect.options[productSelect.selectedIndex];
-    if (!selectedOption || !selectedOption.value) {
-        showAlert('warning', 'Please select a product');
-        return;
-    }
-
-    const availableStock = parseInt(selectedOption.dataset.stock) || 0;
-    const quantity = parseInt(quantityInput.value);
-    const price = parseFloat(priceInput.value);
-
-    // Validate quantity
-    if (isNaN(quantity) || quantity <= 0) {
-        showAlert('warning', 'Please enter valid quantity (minimum 1)');
-        return;
-    }
-
-    // Validate stock
-    if (quantity > availableStock) {
-        showAlert('warning', `Only ${availableStock} units available`);
-        return;
-    }
-
-    // Validate price
-    if (isNaN(price) || price <= 0) {
-        showAlert('warning', 'Please enter valid price');
+    if (!productId || isNaN(quantity) || quantity <= 0) {
+        showAlert('warning', 'Please select a product and enter valid quantity');
         return;
     }
 
     const saleData = {
-        productId: parseInt(productSelect.value),
+        productId: productId,
         quantitySold: quantity,
         unitPrice: price
     };
 
-    // Show loading state
-    const confirmBtn = document.getElementById('confirmSaleBtn');
-    const originalBtnText = confirmBtn.innerHTML;
-    confirmBtn.disabled = true;
-    confirmBtn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Processing...';
-
     fetch(`${API_BASE_URL}/sales`, {
         method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-            'Accept': 'application/json'
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(saleData)
     })
-    .then(async response => {
-        const data = await response.json();
-        if (!response.ok) {
-            throw new Error(data.message || 'Sale failed');
-        }
-        return data;
+    .then(response => {
+        if (!response.ok) throw new Error('Sale failed');
+        return response.json();
     })
     .then(data => {
         showAlert('success', 'Sale recorded successfully');
-
-        // Close modal
-        const modal = bootstrap.Modal.getInstance(document.getElementById('recordSaleModal'));
-        if (modal) modal.hide();
-
-        // Refresh data
+        document.getElementById('recordSaleModal').querySelector('.btn-close').click();
         fetchSales();
-        fetchProducts();
+        fetchProducts(); // Refresh stock levels
         fetchDashboardMetrics();
-        loadProductsForSale();
+        loadProductsForSale(); // Refresh dropdown
     })
     .catch(error => {
-        console.error('Sale error:', error);
+        console.error('Error recording sale:', error);
         showAlert('danger', error.message || 'Failed to record sale');
-    })
-    .finally(() => {
-        // Reset button state
-        if (confirmBtn) {
-            confirmBtn.disabled = false;
-            confirmBtn.innerHTML = originalBtnText;
-        }
     });
 }
+
 // ==================== DASHBOARD & UTILITY FUNCTIONS ====================
 function fetchDashboardMetrics() {
     fetch(`${API_BASE_URL}/products`)
@@ -626,20 +552,8 @@ function fetchDashboardMetrics() {
             console.error('Error fetching today\'s sales:', error);
         });
 }
+
 function showAlert(type, message) {
-    // Ensure the alerts container exists
-    let alertsContainer = document.getElementById('alertsContainer');
-
-    // If it doesn't exist, create it
-    if (!alertsContainer) {
-        alertsContainer = document.createElement('div');
-        alertsContainer.id = 'alertsContainer';
-        alertsContainer.className = 'position-fixed top-0 end-0 p-3';
-        alertsContainer.style.zIndex = '1100';
-        document.body.appendChild(alertsContainer);
-    }
-
-    // Create the alert element
     const alertDiv = document.createElement('div');
     alertDiv.className = `alert alert-${type} alert-dismissible fade show`;
     alertDiv.role = 'alert';
@@ -648,17 +562,15 @@ function showAlert(type, message) {
         <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
     `;
 
-    // Add the alert to the container
+    const alertsContainer = document.getElementById('alertsContainer');
     alertsContainer.appendChild(alertDiv);
 
     // Auto-dismiss after 5 seconds
     setTimeout(() => {
-        alertDiv.classList.remove('show');
-        alertDiv.addEventListener('transitionend', () => {
-            alertDiv.remove();
-        });
+        alertDiv.remove();
     }, 5000);
 }
+
 // Stock adjustment functions
 function adjustStock(productId, delta) {
     fetch(`${API_BASE_URL}/products/${productId}/stock/adjust`, {

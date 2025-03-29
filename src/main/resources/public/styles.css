@@ -105,74 +105,7 @@ main {
     }
 }
 
-/* Sales Tab Specific Styles */
-#sales .table-responsive {
-    max-height: 600px;
-}
 
-/* Record Sale Modal Styles */
-#recordSaleModal .modal-body {
-    padding: 1.5rem;
-}
-
-#recordSaleModal .form-control:read-only {
-    background-color: #f8f9fa;
-    cursor: not-allowed;
-}
-
-#saleTotalPrice {
-    font-size: 1.25rem;
-    color: #28a745;
-}
-
-#productStockHelp {
-    display: block;
-    margin-top: 0.25rem;
-    font-size: 0.875rem;
-}
-
-/* Sales Report Modal Styles */
-#salesReportModal .modal-body {
-    padding: 1.5rem;
-}
-
-#salesReportModal .card-header {
-    padding: 0.75rem 1.25rem;
-}
-
-#salesReportModal .report-results {
-    display: none;
-    margin-top: 1.5rem;
-}
-
-#salesReportModal .h4 {
-    font-weight: 600;
-}
-
-#salesReportModal .table {
-    margin-bottom: 0;
-}
-
-/* Dashboard Sales Card */
-#todaysSales {
-    font-weight: 600;
-}
-
-/* Sales Table Styles */
-#salesTableBody tr:hover {
-    background-color: rgba(0, 123, 255, 0.05);
-}
-
-#salesTableBody td:nth-child(4),
-#salesTableBody td:nth-child(5) {
-    font-family: 'Courier New', Courier, monospace;
-    text-align: right;
-}
-
-#salesTableBody td:nth-child(5) {
-    color: #28a745;
-    font-weight: 500;
-}
 
 /* Action Buttons */
 .btn-sale {

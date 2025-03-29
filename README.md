@@ -120,15 +120,3 @@ Project Maintainer: [nkululeko]
 Project Link: https://github.com/nkululeko111/inventory-management-system
 ```
 
-This README includes:
-
-1. **Badges** for quick visual identification of technologies
-2. **Clear feature breakdown**
-3. **Complete database schema** with proper formatting
-4. **Step-by-step installation** instructions
-5. **Usage example** showing the console interface
-6. **API documentation** link (optional)
-7. **Development roadmap** with checkboxes
-8. **Contribution guidelines**
-9. **License information**
-10. **Contact details**

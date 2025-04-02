@@ -1,6 +1,5 @@
 package org.inventorymanagementsystem;
 
-
 import java.util.List;
 
 class SalesReport {

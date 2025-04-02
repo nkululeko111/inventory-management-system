@@ -1,4 +1,4 @@
-package org.inventorymanagementsystem;
+package org.inventorymanagementsystem.controller;
 
 import java.sql.*;
 import org.h2.tools.Server;

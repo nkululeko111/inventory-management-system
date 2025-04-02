@@ -1,7 +1,12 @@
-package org.inventorymanagementsystem;
+package org.inventorymanagementsystem.controller;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonSyntaxException;
+import org.inventorymanagementsystem.InventoryManagementSystem;
+import org.inventorymanagementsystem.model.Product;
+import org.inventorymanagementsystem.model.Sale;
+import org.inventorymanagementsystem.model.Supplier;
+
 import java.sql.Connection;
 import java.sql.SQLException;
 import static spark.Spark.*;

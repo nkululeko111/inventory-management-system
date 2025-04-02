@@ -1,8 +1,14 @@
 package org.inventorymanagementsystem;
 
 import com.google.gson.Gson;
+import org.inventorymanagementsystem.controller.DatabaseConnection;
 
-import static org.inventorymanagementsystem.APIServer.start;
+import org.inventorymanagementsystem.model.Supplier;
+import org.inventorymanagementsystem.model.Product;
+import org.inventorymanagementsystem.model.Sale;
+
+
+import static org.inventorymanagementsystem.controller.APIServer.start;
 import static spark.Spark.*;
 import java.sql.*;
 import java.util.ArrayList;

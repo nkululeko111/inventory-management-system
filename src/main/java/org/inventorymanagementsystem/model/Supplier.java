@@ -1,4 +1,4 @@
-package org.inventorymanagementsystem;
+package org.inventorymanagementsystem.model;
 
 
 public class Supplier {

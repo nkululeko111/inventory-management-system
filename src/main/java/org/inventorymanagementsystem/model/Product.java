@@ -1,4 +1,4 @@
-package org.inventorymanagementsystem;
+package org.inventorymanagementsystem.model;
 import java.util.Objects;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
